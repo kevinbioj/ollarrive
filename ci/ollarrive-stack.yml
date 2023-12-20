@@ -1,0 +1,54 @@
+services:
+  database:
+    image: postgres:16.1-alpine
+    environment:
+      POSTGRES_USER: ollarrive
+      POSTGRES_PASSWORD_FILE: /run/secrets/ollarrive_database_password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ollarrive"]
+      start_period: 3s
+      interval: 5s
+      retries: 10
+    secrets:
+      - ollarrive_database_password
+    volumes:
+      - ollarrive_database_data:/var/lib/postgresql/data
+
+  server:
+    image: ${BASE_IMAGE}/server:${TAG}
+    configs:
+      - source: application.properties
+        target: /app/application-prod.properties
+    environment:
+      SPRING_CONFIG_ADDITIONAL_LOCATION: file:/app/application-prod.properties
+      SPRING_PROFILES_ACTIVE: prod
+    healthcheck:
+      test: curl localhost:8080/actuator/health | grep UP || exit 1
+      start_period: 5s
+      interval: 5s
+      retries: 10
+    secrets:
+      - ollarrive_database_password
+
+  client:
+    image: ${BASE_IMAGE}/client:${TAG}
+    configs:
+      - source: nginx.conf
+        target: /etc/nginx/conf.d/default.conf
+    ports:
+      - 8085:80
+
+configs:
+  application.properties:
+    template_driver: golang
+    file: conf/application.properties.tmpl
+  nginx.conf:
+    file: conf/nginx.conf
+
+secrets:
+  ollarrive_database_password:
+    external: true
+
+volumes:
+  ollarrive_database_data:
+    external: true

@@ -1,0 +1,13 @@
+services:
+  database:
+    image: postgres:16.1-alpine
+    environment:
+      POSTGRES_USER: ollarrive
+      POSTGRES_PASSWORD: dUj0ZdIZml451d1J
+    ports:
+      - 5432:5432
+    volumes:
+      - database_data:/var/lib/postgresql/data
+
+volumes:
+  database_data:
