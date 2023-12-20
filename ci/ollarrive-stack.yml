@@ -22,11 +22,6 @@ services:
     environment:
       SPRING_CONFIG_ADDITIONAL_LOCATION: file:/app/application-prod.properties
       SPRING_PROFILES_ACTIVE: prod
-    healthcheck:
-      test: curl localhost:8080/actuator/health | grep UP || exit 1
-      start_period: 5s
-      interval: 5s
-      retries: 10
     secrets:
       - ollarrive_database_password
 
