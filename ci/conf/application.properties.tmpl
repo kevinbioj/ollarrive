@@ -2,3 +2,6 @@
 spring.datasource.url=jdbc:postgresql://database:5432/ollarrive
 spring.datasource.username=ollarrive
 spring.datasource.password={{ secret "ollarrive_database_password" }}
+
+# Database configuration
+spring.jpa.hibernate.ddl-auto=update
