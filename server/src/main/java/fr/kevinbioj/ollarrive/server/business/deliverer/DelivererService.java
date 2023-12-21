@@ -130,7 +130,7 @@ public class DelivererService {
       List<Predicate> predicates = new ArrayList<>();
       if (request.getName() != null) {
         predicates.add(builder.like(builder.lower(root.get("name")),
-            "*" + request.getName().toLowerCase() + "*"));
+            "%" + request.getName().toLowerCase() + "%"));
       }
       if (request.getAvailable() != null) {
         predicates.add(builder.equal(root.get("available"), request.getAvailable()));

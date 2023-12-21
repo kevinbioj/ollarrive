@@ -53,9 +53,7 @@ const parseSearchParams = (
   const createdBeforeDate =
     createdBefore === null ? null : dayjs(createdBefore);
   return {
-    ...(name !== null && name.trim() !== ""
-      ? { available: available === "false" ? false : true }
-      : {}),
+    ...(name !== null && name.trim() !== "" ? { name: name.trim() } : {}),
     ...(available !== null
       ? { available: available === "false" ? false : true }
       : {}),
@@ -77,11 +75,10 @@ const parseSearchParams = (
 };
 
 const stringifySearchParams = (parsed: DelivererSearchParams) => {
-  // const hasName =
-  //   typeof parsed.name === "string" && parsed.name.trim().length > 0;
+  const hasName = typeof parsed.name === "string" && parsed.name.trim() !== "";
   const hasAvailability = typeof parsed.available === "boolean";
   return new URLSearchParams({
-    // ...(hasName ? { name: parsed.name } : {}),
+    ...(hasName ? { name: parsed.name } : {}),
     ...(hasAvailability ? { available: String(parsed.available) } : {}),
     ...(parsed.createdAfter ? { createdAfter: parsed.createdAfter } : {}),
     ...(parsed.createdBefore ? { createdBefore: parsed.createdBefore } : {}),
