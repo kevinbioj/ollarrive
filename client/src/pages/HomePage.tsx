@@ -14,6 +14,7 @@ export default function HomePage() {
       <Stack
         alignItems="center"
         direction={["column", "row"]}
+        gap={3}
         justifyContent="center"
         marginTop={3}
       >
@@ -23,6 +24,9 @@ export default function HomePage() {
           to={PathConstants.DELIVERER_LIST}
         >
           Gérer mes livreurs
+        </Button>
+        <Button component={RouterLink} size="lg" to={PathConstants.TOUR_LIST}>
+          Gérer mes tournées
         </Button>
       </Stack>
     </>

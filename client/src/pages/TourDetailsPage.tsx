@@ -9,36 +9,40 @@ import {
   Input,
   Link,
   Stack,
-  Switch,
   Typography,
 } from "@mui/joy";
+import { DateTimePicker } from "@mui/x-date-pickers-pro";
 import dayjs from "dayjs";
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom";
 
-import { DELIVERER_NAME_LIMIT } from "~/api/constants";
-import { useDeliverer } from "~/hooks/useDeliverer";
-import { useDelivererDelete } from "~/hooks/useDelivererDelete";
-import { useDelivererUpdate } from "~/hooks/useDelivererUpdate";
+import { TOUR_NAME_LIMIT } from "~/api/constants";
+import { useTour } from "~/hooks/useTour";
+import { useTourUpdate } from "~/hooks/useTourUpdate";
+import { useTourDelete } from "~/hooks/useTourDelete";
 import PathConstants from "~/routes";
 
-export default function DelivererDetailsPage() {
+export default function TourDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { data: deliverer } = useDeliverer(id!);
-  const { isPending: isUpdating, mutate: updateDeliverer } = useDelivererUpdate(
-    id!
-  );
-  const { mutate: deleteDeliverer } = useDelivererDelete(id!);
+  const { data: tour } = useTour(id!);
+  const { isPending: isUpdating, mutate: updateTour } = useTourUpdate(id!);
+  const { mutate: deleteTour } = useTourDelete(id!);
   const { control, formState, handleSubmit, setValue } = useForm({
-    defaultValues: { name: "", available: true },
+    defaultValues: {
+      name: "",
+      startDate: dayjs(),
+      endDate: dayjs(),
+      delivererId: null,
+    },
   });
   useEffect(() => {
-    if (typeof deliverer === "undefined") return;
-    setValue("name", deliverer.name);
-    setValue("available", deliverer.available);
-  }, [deliverer, setValue]);
+    if (typeof tour === "undefined") return;
+    setValue("name", tour.name);
+    setValue("startDate", dayjs(tour.startDate));
+    setValue("endDate", dayjs(tour.endDate));
+  }, [tour, setValue]);
   return (
     <>
       <Breadcrumbs separator={<KeyboardArrowRight />}>
@@ -48,20 +52,17 @@ export default function DelivererDetailsPage() {
         <Link
           color="neutral"
           component={RouterLink}
-          to={PathConstants.DELIVERER_LIST}
+          to={PathConstants.TOUR_LIST}
         >
-          Gestion des livreurs
+          Gestion des tournées
         </Link>
-        <Typography>{deliverer?.name ?? "Chargement en cours..."}</Typography>
+        <Typography>{tour?.name ?? "Chargement en cours..."}</Typography>
       </Breadcrumbs>
-      {deliverer && (
-        <Stack
-          component="form"
-          onSubmit={handleSubmit((e) => updateDeliverer(e))}
-        >
-          <FormControl>
+      {tour && (
+        <Stack component="form" onSubmit={handleSubmit((e) => updateTour(e))}>
+          <FormControl sx={{ marginBottom: 3 }}>
             <FormLabel>Identifiant</FormLabel>
-            <Input defaultValue={deliverer.id} readOnly variant="soft" />
+            <Input defaultValue={tour.id} readOnly variant="soft" />
           </FormControl>
           <FormControl error={!!formState.errors.name} sx={{ marginBottom: 3 }}>
             <FormLabel>Nom</FormLabel>
@@ -71,8 +72,8 @@ export default function DelivererDetailsPage() {
               render={({ field }) => <Input placeholder="Jacques" {...field} />}
               rules={{
                 maxLength: {
-                  value: DELIVERER_NAME_LIMIT,
-                  message: "Longueur maximale de 64 caractères",
+                  value: TOUR_NAME_LIMIT,
+                  message: `Longueur maximale de ${TOUR_NAME_LIMIT} caractères`,
                 },
                 required: {
                   value: true,
@@ -82,24 +83,30 @@ export default function DelivererDetailsPage() {
             />
             <FormHelperText>{formState.errors.name?.message}</FormHelperText>
           </FormControl>
-          <FormControl orientation="horizontal" sx={{ marginBottom: 3 }}>
-            <FormLabel>Disponible</FormLabel>
+          <FormControl sx={{ marginBottom: 3 }}>
+            <FormLabel>Début de la tournée</FormLabel>
             <Controller
               control={control}
-              name="available"
+              name="startDate"
               render={({ field }) => (
-                <Switch checked={field.value} size="lg" {...field} />
+                <DateTimePicker
+                  slotProps={{ textField: { size: "small" } }}
+                  {...field}
+                />
               )}
             />
           </FormControl>
           <FormControl sx={{ marginBottom: 3 }}>
-            <FormLabel>Date de création</FormLabel>
-            <Input
-              defaultValue={dayjs(deliverer.createdAt).format(
-                "DD/MM/YYYY HH:mm"
+            <FormLabel>Fin de la tournée</FormLabel>
+            <Controller
+              control={control}
+              name="endDate"
+              render={({ field }) => (
+                <DateTimePicker
+                  slotProps={{ textField: { size: "small" } }}
+                  {...field}
+                />
               )}
-              readOnly
-              variant="soft"
             />
           </FormControl>
           <Stack direction="row" gap={1}>
@@ -114,8 +121,8 @@ export default function DelivererDetailsPage() {
             <IconButton
               color="danger"
               onClick={() =>
-                deleteDeliverer(undefined, {
-                  onSuccess: () => navigate(PathConstants.DELIVERER_LIST),
+                deleteTour(undefined, {
+                  onSuccess: () => navigate(PathConstants.TOUR_LIST),
                 })
               }
               variant="solid"

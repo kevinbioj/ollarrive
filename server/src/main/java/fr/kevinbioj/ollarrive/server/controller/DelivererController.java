@@ -1,5 +1,6 @@
 package fr.kevinbioj.ollarrive.server.controller;
 
+import fr.kevinbioj.ollarrive.server.business.AbstractBusinessException;
 import fr.kevinbioj.ollarrive.server.business.SearchResultDto;
 import fr.kevinbioj.ollarrive.server.business.ValidationException;
 import fr.kevinbioj.ollarrive.server.business.deliverer.DelivererDto;
@@ -15,9 +16,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import java.net.URI;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -71,5 +74,14 @@ public class DelivererController {
   public ResponseEntity<Void> deleteOne(@PathVariable UUID id) throws DelivererNotFoundException {
     delivererService.deleteOne(id);
     return ResponseEntity.noContent().build();
+  }
+
+  // ---
+
+  @ExceptionHandler({DelivererNotFoundException.class})
+  public ProblemDetail notFoundException(AbstractBusinessException exception) {
+    var pd = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getDetails());
+    pd.setTitle(exception.getCode());
+    return pd;
   }
 }

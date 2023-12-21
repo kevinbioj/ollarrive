@@ -12,3 +12,11 @@ export type DelivererDto = {
   available: boolean;
   createdAt: string;
 };
+
+export type TourDto = {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  deliverer: DelivererDto | null;
+};
