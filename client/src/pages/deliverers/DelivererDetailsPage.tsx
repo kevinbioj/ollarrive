@@ -18,19 +18,20 @@ import { Controller, useForm } from "react-hook-form";
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom";
 
 import { DELIVERER_NAME_LIMIT } from "~/api/constants";
-import { useDeliverer } from "~/hooks/useDeliverer";
-import { useDelivererDelete } from "~/hooks/useDelivererDelete";
-import { useDelivererUpdate } from "~/hooks/useDelivererUpdate";
+import {
+  useDeleteDelivererById,
+  useDelivererById,
+  useUpdateDelivererById,
+} from "~/hooks/useDeliverers";
 import PathConstants from "~/routes";
 
 export default function DelivererDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { data: deliverer } = useDeliverer(id!);
-  const { isPending: isUpdating, mutate: updateDeliverer } = useDelivererUpdate(
-    id!
-  );
-  const { mutate: deleteDeliverer } = useDelivererDelete(id!);
+  const { data: deliverer } = useDelivererById(id!);
+  const { isPending: isUpdating, mutate: updateDeliverer } =
+    useUpdateDelivererById(id!);
+  const { mutate: deleteDeliverer } = useDeleteDelivererById(id!);
   const { control, formState, handleSubmit, setValue } = useForm({
     defaultValues: { name: "", available: true },
   });

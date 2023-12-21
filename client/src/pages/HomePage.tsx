@@ -28,6 +28,13 @@ export default function HomePage() {
         <Button component={RouterLink} size="lg" to={PathConstants.TOUR_LIST}>
           Gérer mes tournées
         </Button>
+        <Button
+          component={RouterLink}
+          size="lg"
+          to={PathConstants.DELIVERY_LIST}
+        >
+          Gérer mes livraisons
+        </Button>
       </Stack>
     </>
   );

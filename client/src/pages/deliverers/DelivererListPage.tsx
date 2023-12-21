@@ -24,7 +24,7 @@ import {
 
 import DelivererCreationModal from "~/components/DelivererCreationModal";
 import SortableAndPaginatedTable from "~/components/SortableAndPaginatedTable";
-import { useDelivererSearch } from "~/hooks/useDelivererSearch";
+import { useSearchDeliverers } from "~/hooks/useDeliverers";
 import PathConstants from "~/routes";
 
 type DelivererSearchParams = {
@@ -93,7 +93,7 @@ export default function DelivererListPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const parsedSearchParams = parseSearchParams(searchParams);
-  const { data: results } = useDelivererSearch(parsedSearchParams);
+  const { data: results } = useSearchDeliverers(parsedSearchParams);
   const [isCreationModalOpen, setCreationModalOpen] = useState(false);
   return (
     <>
@@ -224,16 +224,23 @@ export default function DelivererListPage() {
         {results && (
           <SortableAndPaginatedTable
             columns={[
-              { key: "name", label: "Nom", render: (r) => r.name },
+              {
+                key: "name",
+                label: "Nom",
+                render: (r) => r.name,
+                sortable: true,
+              },
               {
                 key: "available",
                 label: "Disponibilité",
                 render: (r) => (r.available ? "Oui" : "Non"),
+                sortable: true,
               },
               {
                 key: "createdAt",
                 label: "Création",
                 render: (r) => dayjs(r.createdAt).format("DD/MM/YYYY HH:mm"),
+                sortable: true,
               },
             ]}
             data={results.items}

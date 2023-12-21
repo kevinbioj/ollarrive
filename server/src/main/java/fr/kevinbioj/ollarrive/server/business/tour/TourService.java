@@ -8,7 +8,10 @@ import fr.kevinbioj.ollarrive.server.business.tour.exception.TourNotFoundExcepti
 import fr.kevinbioj.ollarrive.server.business.tour.request.TourCreationRequest;
 import fr.kevinbioj.ollarrive.server.business.tour.request.TourSearchRequest;
 import fr.kevinbioj.ollarrive.server.business.tour.request.TourUpdateRequest;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.validation.Validator;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +19,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
@@ -90,7 +94,8 @@ public class TourService {
         Objects.requireNonNullElse(request.getSortBy(), "name")
     );
     var pageable = PageRequest.of(request.getPage(), request.getLimit(), sort);
-    var results = tourRepository.findAll(pageable);
+    var specification = createSearchSpecification(request);
+    var results = tourRepository.findAll(specification, pageable);
     return new SearchResultDto<>(
         results.map(d -> modelMapper.map(d, TourDto.class)).toList(),
         results.getNumber(),
@@ -128,5 +133,18 @@ public class TourService {
       tour.setDeliverer(null);
     }
     return modelMapper.map(tourRepository.save(tour), TourDto.class);
+  }
+
+  // ---
+
+  private Specification<TourEntity> createSearchSpecification(TourSearchRequest request) {
+    return ((root, query, builder) -> {
+      List<Predicate> predicates = new ArrayList<>();
+      if (request.getName() != null) {
+        predicates.add(builder.like(builder.lower(root.get("name")),
+            "%" + request.getName().toLowerCase() + "%"));
+      }
+      return builder.and(predicates.toArray(Predicate[]::new));
+    });
   }
 }

@@ -16,7 +16,7 @@ import {
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { DELIVERER_NAME_LIMIT } from "~/api/constants";
-import { useDelivererCreate } from "~/hooks/useDelivererCreate";
+import { useCreateDeliverer } from "~/hooks/useDeliverers";
 
 type DelivererCreationModalProps = Omit<ModalProps, "children">;
 
@@ -24,7 +24,7 @@ export default function DelivererCreationModal({
   onClose,
   ...props
 }: DelivererCreationModalProps) {
-  const { data, mutate: createDeliverer } = useDelivererCreate();
+  const { data, mutate: createDeliverer } = useCreateDeliverer();
   const { control, formState, handleSubmit } = useForm({
     defaultValues: { name: "", available: true },
   });

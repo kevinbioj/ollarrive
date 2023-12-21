@@ -1,6 +1,5 @@
 import { Add, KeyboardArrowRight } from "@mui/icons-material";
 import { Breadcrumbs, Button, Link, Sheet, Stack, Typography } from "@mui/joy";
-import dayjs from "dayjs";
 import { useState } from "react";
 import {
   Link as RouterLink,
@@ -8,19 +7,21 @@ import {
   useSearchParams,
 } from "react-router-dom";
 
-import TourCreationModal from "~/components/TourCreationModal";
 import SortableAndPaginatedTable from "~/components/SortableAndPaginatedTable";
-import { useTourSearch } from "~/hooks/useTourSearch";
 import PathConstants from "~/routes";
+import { useSearchDeliveries } from "~/hooks/useDeliveries";
+import DeliveryCreationModal from "~/components/DeliveryCreationModal";
 
-type TourSearchParams = {
+type DeliverySearchParams = {
   page: number;
   limit: number;
-  sortBy: "name" | "startDate" | "endDate";
+  sortBy: "pickupAddress" | "deliveryAddress";
   sortOrder: "asc" | "desc";
 };
 
-const parseSearchParams = (searchParams: URLSearchParams): TourSearchParams => {
+const parseSearchParams = (
+  searchParams: URLSearchParams
+): DeliverySearchParams => {
   const page = searchParams.get("page");
   const limit = searchParams.get("limit");
   const sortBy = searchParams.get("sortBy");
@@ -28,16 +29,16 @@ const parseSearchParams = (searchParams: URLSearchParams): TourSearchParams => {
   return {
     page: Math.max(0, +(page ?? 0), 0),
     limit: Math.min(Math.max(5, +(limit ?? 0)), 50),
-    sortBy: (["name", "startDate", "endDate"] as const).includes(sortBy)
+    sortBy: (["pickupAddress", "deliveryAddress"] as const).includes(sortBy)
       ? sortBy
-      : "name",
+      : "pickupAddress",
     sortOrder: (["asc", "desc"] as const).includes(sortOrder)
       ? sortOrder
       : "asc",
   };
 };
 
-const stringifySearchParams = (parsed: TourSearchParams) => {
+const stringifySearchParams = (parsed: DeliverySearchParams) => {
   return new URLSearchParams({
     page: parsed.page.toString(),
     limit: parsed.limit.toString(),
@@ -46,11 +47,11 @@ const stringifySearchParams = (parsed: TourSearchParams) => {
   });
 };
 
-export default function TourListPage() {
+export default function DeliveryListPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const parsedSearchParams = parseSearchParams(searchParams);
-  const { data: results } = useTourSearch(parsedSearchParams);
+  const { data: results } = useSearchDeliveries(parsedSearchParams);
   const [isCreationModalOpen, setCreationModalOpen] = useState(false);
   return (
     <>
@@ -58,7 +59,7 @@ export default function TourListPage() {
         <Link color="neutral" component={RouterLink} to={PathConstants.HOME}>
           Accueil
         </Link>
-        <Typography>Gestion des tournées</Typography>
+        <Typography>Gestion des livraisons</Typography>
       </Breadcrumbs>
       <Sheet
         sx={{
@@ -77,37 +78,38 @@ export default function TourListPage() {
             onClick={() => setCreationModalOpen(true)}
             startDecorator={<Add />}
           >
-            Créer une tournée
+            Créer une livraison
           </Button>
         </Stack>
         {results && (
           <SortableAndPaginatedTable
             columns={[
-              { key: "name", label: "Nom", render: (r) => r.name },
               {
-                key: "startDate",
-                label: "Date de début",
-                render: (r) => dayjs(r.startDate).format("DD/MM/YYYY HH:mm"),
+                key: "pickupAddress",
+                label: "Adresse d'enlèvement",
+                render: (r) => r.pickupAddress,
+                sortable: true,
               },
               {
-                key: "endDate",
-                label: "Date de fin",
-                render: (r) => dayjs(r.endDate).format("DD/MM/YYYY HH:mm"),
+                key: "deliveryAddress",
+                label: "Adresse de livraison",
+                render: (r) => r.deliveryAddress,
+                sortable: true,
               },
               {
-                key: "deliverer",
-                label: "Assignée à",
+                key: "tour",
+                label: "Tournée",
                 render: (r) =>
-                  r.deliverer ? (
-                    r.deliverer.name
+                  r.tour ? (
+                    r.tour.name
                   ) : (
-                    <Typography color="neutral">Personne</Typography>
+                    <Typography color="neutral">Aucune</Typography>
                   ),
               },
             ]}
             data={results.items}
             hoverRow
-            onClick={(row) => navigate(`/tours/${row.id}`)}
+            onClick={(row) => navigate(`/deliveries/${row.id}`)}
             onPageChange={(page, limit) =>
               setSearchParams(
                 stringifySearchParams({ ...parsedSearchParams, page, limit })
@@ -117,7 +119,7 @@ export default function TourListPage() {
               setSearchParams(
                 stringifySearchParams({
                   ...parsedSearchParams,
-                  sortBy: sortBy as "name" | "startDate" | "endDate",
+                  sortBy: sortBy as "pickupAddress" | "deliveryAddress",
                   sortOrder,
                 })
               )
@@ -135,9 +137,9 @@ export default function TourListPage() {
           />
         )}
       </Sheet>
-      <TourCreationModal
-        aria-labelledby="Création d'un livreur"
-        aria-describedby="Formulaire de création d'un nouveau livreur"
+      <DeliveryCreationModal
+        aria-labelledby="Création d'une livraison"
+        aria-describedby="Formulaire de création d'une nouvelle livraison"
         open={isCreationModalOpen}
         onClose={() => setCreationModalOpen(false)}
       />

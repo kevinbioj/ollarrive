@@ -1,23 +1,16 @@
-package fr.kevinbioj.ollarrive.server.business.tour.request;
+package fr.kevinbioj.ollarrive.server.business.delivery.request;
 
-import fr.kevinbioj.ollarrive.server.business.tour.TourEntity;
 import fr.kevinbioj.ollarrive.server.validation.OneOf;
 import jakarta.validation.constraints.Min;
 import lombok.Data;
-import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.Range;
 
 @Data
-public class TourSearchRequest {
-
-  /* Critères de recherche */
-
-  @Length(max = TourEntity.NAME_LIMIT, message = "name.length")
-  private String name;
+public class DeliverySearchRequest {
 
   /* Paramètres de tri */
 
-  @OneOf(value = {"name", "available", "createdAt"}, message = "sortBy.invalid")
+  @OneOf(value = {"pickupAddress", "deliveryAddress"}, message = "sortBy.invalid")
   private String sortBy;
 
   @OneOf(value = {"asc", "desc"}, message = "sortOrder.invalid")

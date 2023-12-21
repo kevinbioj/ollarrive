@@ -19,6 +19,7 @@ type SortableAndPaginatedTableColumn<T> = {
   key: string;
   label: React.ReactNode;
   render: (row: T) => React.ReactNode;
+  sortable?: boolean;
 };
 
 type SortableAndPaginatedTableProps<T extends { id: string }> = Omit<
@@ -63,9 +64,15 @@ export default function SortableAndPaginatedTable<T extends { id: string }>({
             {columns.map((c) => (
               <Box
                 component="th"
-                onClick={() => changeSort(c.key)}
+                onClick={() => {
+                  if (c.sortable) {
+                    changeSort(c.key);
+                  }
+                }}
                 key={c.key}
-                sx={{ "&:hover": { cursor: "pointer" } }}
+                sx={{
+                  ...(c.sortable ? { "&:hover": { cursor: "pointer" } } : {}),
+                }}
               >
                 {c.label}
                 {sort.by === c.key &&

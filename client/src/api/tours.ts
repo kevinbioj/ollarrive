@@ -4,10 +4,11 @@ import { TourDto, SearchResultDto } from "~/api/@types";
 import client from "~/api/client";
 
 export type FindToursRequest = {
-  sortBy: "name" | "startDate" | "endDate";
-  sortOrder: "asc" | "desc";
-  page: number;
-  limit: number;
+  name?: string;
+  sortBy?: "name" | "startDate" | "endDate";
+  sortOrder?: "asc" | "desc";
+  page?: number;
+  limit?: number;
 };
 
 export async function findTours(searchParams: FindToursRequest) {

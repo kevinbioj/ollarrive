@@ -12,25 +12,22 @@ import {
   Stack,
   Typography,
 } from "@mui/joy";
-import { DateTimePicker } from "@mui/x-date-pickers-pro";
-import dayjs from "dayjs";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { TOUR_NAME_LIMIT } from "~/api/constants";
-import { useCreateTour } from "~/hooks/useTours";
+import { ADDRESS_LIMIT } from "~/api/constants";
+import { useCreateDelivery } from "~/hooks/useDeliveries";
 
-type TourCreationModalProps = Omit<ModalProps, "children">;
+type DeliveryCreationModalProps = Omit<ModalProps, "children">;
 
-export default function TourCreationModal({
+export default function DeliveryCreationModal({
   onClose,
   ...props
-}: TourCreationModalProps) {
-  const { data, mutate: createTour } = useCreateTour();
+}: DeliveryCreationModalProps) {
+  const { mutate: createDelivery } = useCreateDelivery();
   const { control, formState, handleSubmit } = useForm({
     defaultValues: {
-      name: "",
-      startDate: dayjs().subtract(1, "day"),
-      endDate: dayjs(),
+      pickupAddress: "",
+      deliveryAddress: "",
     },
   });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -38,10 +35,10 @@ export default function TourCreationModal({
     <>
       <Modal onClose={onClose} {...props}>
         <ModalDialog>
-          <Typography level="h3">Création d'une nouvelle tournée</Typography>
+          <Typography level="h3">Création d'une nouvelle livraison</Typography>
           <form
             onSubmit={handleSubmit((e) =>
-              createTour(e, {
+              createDelivery(e, {
                 onSuccess: () => {
                   onClose?.({}, "closeClick");
                   setSnackbarOpen(true);
@@ -50,20 +47,23 @@ export default function TourCreationModal({
             )}
           >
             <FormControl
-              error={!!formState.errors.name}
+              error={!!formState.errors.pickupAddress}
               sx={{ marginBottom: 3 }}
             >
-              <FormLabel>Nom</FormLabel>
+              <FormLabel>Adresse d&apos;enlèvement</FormLabel>
               <Controller
                 control={control}
-                name="name"
+                name="pickupAddress"
                 render={({ field }) => (
-                  <Input placeholder="Jacques" {...field} />
+                  <Input
+                    placeholder="3 Avenue du McDonald's 76000 Rouen"
+                    {...field}
+                  />
                 )}
                 rules={{
                   maxLength: {
-                    value: TOUR_NAME_LIMIT,
-                    message: "Longueur maximale de 64 caractères",
+                    value: ADDRESS_LIMIT,
+                    message: `Longueur maximale de ${ADDRESS_LIMIT} caractères`,
                   },
                   required: {
                     value: true,
@@ -71,33 +71,38 @@ export default function TourCreationModal({
                   },
                 }}
               />
-              <FormHelperText>{formState.errors.name?.message}</FormHelperText>
+              <FormHelperText>
+                {formState.errors.pickupAddress?.message}
+              </FormHelperText>
             </FormControl>
-            <FormControl sx={{ marginBottom: 3 }}>
-              <FormLabel>Début de la tournée</FormLabel>
+            <FormControl
+              error={!!formState.errors.deliveryAddress}
+              sx={{ marginBottom: 3 }}
+            >
+              <FormLabel>Adresse de livraison</FormLabel>
               <Controller
                 control={control}
-                name="startDate"
+                name="deliveryAddress"
                 render={({ field }) => (
-                  <DateTimePicker
-                    slotProps={{ textField: { size: "small" } }}
+                  <Input
+                    placeholder="8 Avenue du Burger King 76600 Petit-Quevilly"
                     {...field}
                   />
                 )}
+                rules={{
+                  maxLength: {
+                    value: ADDRESS_LIMIT,
+                    message: `Longueur maximale de ${ADDRESS_LIMIT} caractères`,
+                  },
+                  required: {
+                    value: true,
+                    message: "Champ requis",
+                  },
+                }}
               />
-            </FormControl>
-            <FormControl sx={{ marginBottom: 3 }}>
-              <FormLabel>Fin de la tournée</FormLabel>
-              <Controller
-                control={control}
-                name="endDate"
-                render={({ field }) => (
-                  <DateTimePicker
-                    slotProps={{ textField: { size: "small" } }}
-                    {...field}
-                  />
-                )}
-              />
+              <FormHelperText>
+                {formState.errors.deliveryAddress?.message}
+              </FormHelperText>
             </FormControl>
             <Button color="success" fullWidth type="submit">
               Valider
@@ -116,7 +121,7 @@ export default function TourCreationModal({
           <Stack>
             <Typography level="title-lg">Création réussie</Typography>
             <Typography level="body-md">
-              {data?.name} a été ajouté·e à la liste des tournées.
+              La livraison a été ajoutée à la liste avec succès.
             </Typography>
           </Stack>
         </Stack>

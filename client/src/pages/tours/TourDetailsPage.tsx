@@ -18,31 +18,48 @@ import { Controller, useForm } from "react-hook-form";
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom";
 
 import { TOUR_NAME_LIMIT } from "~/api/constants";
-import { useTour } from "~/hooks/useTour";
-import { useTourUpdate } from "~/hooks/useTourUpdate";
-import { useTourDelete } from "~/hooks/useTourDelete";
+import { findDeliverers } from "~/api/deliverers";
+import AsynchronousAutocomplete from "~/components/AsynchronousAutocomplete";
+import {
+  useDeleteTourById,
+  useTourById,
+  useUpdateTourById,
+} from "~/hooks/useTours";
 import PathConstants from "~/routes";
 
 export default function TourDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { data: tour } = useTour(id!);
-  const { isPending: isUpdating, mutate: updateTour } = useTourUpdate(id!);
-  const { mutate: deleteTour } = useTourDelete(id!);
-  const { control, formState, handleSubmit, setValue } = useForm({
+  const { data: tour } = useTourById(id!);
+  const { isPending: isUpdating, mutate: updateTour } = useUpdateTourById(id!);
+  const { mutate: deleteTour } = useDeleteTourById(id!);
+  const { control, formState, handleSubmit, setValue } = useForm<{
+    name: string;
+    startDate: dayjs.Dayjs;
+    endDate: dayjs.Dayjs;
+    deliverer: { label: string; id: string } | null;
+  }>({
     defaultValues: {
       name: "",
       startDate: dayjs(),
       endDate: dayjs(),
-      delivererId: null,
+      deliverer: null,
     },
   });
+
   useEffect(() => {
     if (typeof tour === "undefined") return;
     setValue("name", tour.name);
     setValue("startDate", dayjs(tour.startDate));
     setValue("endDate", dayjs(tour.endDate));
+    setValue(
+      "deliverer",
+      tour.deliverer
+        ? { label: tour.deliverer.name, id: tour.deliverer.id }
+        : null
+    );
   }, [tour, setValue]);
+
   return (
     <>
       <Breadcrumbs separator={<KeyboardArrowRight />}>
@@ -59,7 +76,12 @@ export default function TourDetailsPage() {
         <Typography>{tour?.name ?? "Chargement en cours..."}</Typography>
       </Breadcrumbs>
       {tour && (
-        <Stack component="form" onSubmit={handleSubmit((e) => updateTour(e))}>
+        <Stack
+          component="form"
+          onSubmit={handleSubmit(({ deliverer, ...data }) =>
+            updateTour({ ...data, delivererId: deliverer?.id ?? null })
+          )}
+        >
           <FormControl sx={{ marginBottom: 3 }}>
             <FormLabel>Identifiant</FormLabel>
             <Input defaultValue={tour.id} readOnly variant="soft" />
@@ -104,6 +126,29 @@ export default function TourDetailsPage() {
               render={({ field }) => (
                 <DateTimePicker
                   slotProps={{ textField: { size: "small" } }}
+                  {...field}
+                />
+              )}
+            />
+          </FormControl>
+          <FormControl sx={{ marginBottom: 3 }}>
+            <FormLabel>Assigné à</FormLabel>
+            <Controller
+              control={control}
+              name="deliverer"
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              render={({ field: { onChange, ref, ...field } }) => (
+                <AsynchronousAutocomplete
+                  fetchOptions={async (name) => {
+                    if (name.length < 3) return [];
+                    const results = await findDeliverers({ name });
+                    return results.items.map((d) => ({
+                      label: d.name,
+                      id: d.id,
+                    }));
+                  }}
+                  isOptionEqualToValue={(o1, o2) => o1.id === o2.id}
+                  onChange={(_, value) => onChange(value)}
                   {...field}
                 />
               )}

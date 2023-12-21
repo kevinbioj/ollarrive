@@ -20,3 +20,10 @@ export type TourDto = {
   endDate: string;
   deliverer: DelivererDto | null;
 };
+
+export type DeliveryDto = {
+  id: string;
+  pickupAddress: string;
+  deliveryAddress: string;
+  tour: TourDto | null;
+};

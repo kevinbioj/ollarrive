@@ -6,10 +6,10 @@ export type FindDeliverersRequest = {
   available?: boolean;
   createdAfter?: string;
   createdBefore?: string;
-  sortBy: "name" | "available" | "createdAt";
-  sortOrder: "asc" | "desc";
-  page: number;
-  limit: number;
+  sortBy?: "name" | "available" | "createdAt";
+  sortOrder?: "asc" | "desc";
+  page?: number;
+  limit?: number;
 };
 
 export async function findDeliverers(searchParams: FindDeliverersRequest) {
