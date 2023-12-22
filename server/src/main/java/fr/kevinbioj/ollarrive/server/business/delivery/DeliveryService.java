@@ -88,14 +88,16 @@ public class DeliveryService {
         Direction.fromString(Objects.requireNonNullElse(request.getSortOrder(), "asc")),
         Objects.requireNonNullElse(request.getSortBy(), "pickupAddress")
     );
-    var pageable = PageRequest.of(request.getPage(), request.getLimit(), sort);
+    var pageable = PageRequest.of(request.getPage(), request.getItemsPerPage(), sort);
     var results = deliveryRepository.findAll(pageable);
     return new SearchResultDto<>(
         results.map(d -> modelMapper.map(d, DeliveryDto.class)).toList(),
         results.getNumber(),
         results.getTotalPages(),
         results.getSize(),
-        results.getTotalElements()
+        results.getTotalElements(),
+        request.getSortBy(),
+        request.getSortOrder()
     );
   }
 

@@ -35,6 +35,6 @@ public class DelivererSearchRequest {
   @Min(value = 0, message = "page.min")
   private Integer page = 0;
 
-  @Range(min = 1, max = 50, message = "limit.range")
-  private Integer limit = 10;
+  @Range(min = 5, max = 50, message = "itemsPerPage.range")
+  private Integer itemsPerPage = 10;
 }

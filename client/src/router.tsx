@@ -1,14 +1,16 @@
+import { lazy } from "react";
 import { createBrowserRouter } from "react-router-dom";
 
 import Layout from "~/layout/Layout";
-import DelivererDetailsPage from "~/pages/deliverers/DelivererDetailsPage";
-import DelivererListPage from "~/pages/deliverers/DelivererListPage";
-import DeliveryDetailsPage from "~/pages/deliveries/DeliveryDetailsPage";
-import DeliveryListPage from "~/pages/deliveries/DeliveryListPage";
-import HomePage from "~/pages/HomePage";
-import TourDetailsPage from "~/pages/tours/TourDetailsPage";
-import TourListPage from "~/pages/tours/TourListPage";
 import PathConstants from "~/routes";
+
+const HomePage = lazy(() => import("./pages/HomePage"));
+const DelivererListPage = lazy(() => import("./pages/deliverers/DelivererListPage"));
+const DelivererDetailsPage = lazy(() => import("./pages/deliverers/DelivererDetailsPage"));
+const DeliveryListPage = lazy(() => import("./pages/deliveries/DeliveryListPage"));
+const DeliveryDetailsPage = lazy(() => import("./pages/deliveries/DeliveryDetailsPage"));
+const TourListPage = lazy(() => import("./pages/tours/TourListPage"));
+const TourDetailsPage = lazy(() => import("./pages/tours/TourDetailsPage"));
 
 const router = createBrowserRouter([
   {

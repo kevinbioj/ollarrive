@@ -2,18 +2,32 @@ import { DelivererDto, SearchResultDto } from "~/api/@types";
 import client from "~/api/client";
 
 export type FindDeliverersRequest = {
-  name?: string;
-  available?: boolean;
-  createdAfter?: string;
-  createdBefore?: string;
+  name?: string | null;
+  available?: boolean | null;
+  createdAfter?: Date | null;
+  createdBefore?: Date | null;
   sortBy?: "name" | "available" | "createdAt";
   sortOrder?: "asc" | "desc";
   page?: number;
   limit?: number;
 };
 
-export async function findDeliverers(searchParams: FindDeliverersRequest) {
-  const response = await client.get("deliverers", { searchParams });
+export async function findDeliverers({
+  name,
+  available,
+  createdAfter,
+  createdBefore,
+  ...params
+}: FindDeliverersRequest) {
+  const response = await client.get("deliverers", {
+    searchParams: {
+      ...(name ? { name } : {}),
+      ...(typeof available === "boolean" ? { available } : {}),
+      ...(createdAfter ? { createdAfter: createdAfter.toISOString() } : {}),
+      ...(createdBefore ? { createdBefore: createdBefore.toISOString() } : {}),
+      ...params,
+    },
+  });
   return response.json<SearchResultDto<DelivererDto>>();
 }
 
@@ -37,10 +51,7 @@ export type UpdateDelivererRequest = {
   available: boolean;
 };
 
-export async function updateDelivererById(
-  id: string,
-  data: UpdateDelivererRequest
-) {
+export async function updateDelivererById(id: string, data: UpdateDelivererRequest) {
   const response = await client.put(`deliverers/${id}`, { json: data });
   return response.json<DelivererDto>();
 }

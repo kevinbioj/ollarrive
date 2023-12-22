@@ -5,7 +5,7 @@ export type FindDeliveriesRequest = {
   sortBy: "pickupAddress" | "deliveryAddress";
   sortOrder: "asc" | "desc";
   page: number;
-  limit: number;
+  itemsPerPage: number;
 };
 
 export async function findDeliveries(searchParams: FindDeliveriesRequest) {
@@ -36,10 +36,7 @@ export type UpdateDeliveryRequest = {
   tourId: string | null;
 };
 
-export async function updateDeliveryById(
-  id: string,
-  data: UpdateDeliveryRequest
-) {
+export async function updateDeliveryById(id: string, data: UpdateDeliveryRequest) {
   const response = await client.put(`deliveries/${id}`, {
     json: data,
   });

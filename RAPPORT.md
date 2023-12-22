@@ -68,7 +68,17 @@ Vous devriez être en mesure d'accéder à l'interface sur [http://localhost:420
 
 ---
 
-## 4 Exigences non-couvertes
+## 4 Accès à l'interface Swagger
+
+La documentation de l'API est disponible à cette adresse : [https://ollarrive.kevinbioj.fr/api/swagger-ui/index.html](https://ollarrive.kevinbioj.fr/api/swagger-ui/index.html).  
+Si vous avez instancié le projet en local, alors ce sera à l'adresse suivante : [http://localhost:4200/api/swagger-ui/index.html](http://localhost:4200/api/swagger-ui/index.html).  
+Enfin, si vous y accédez depuis le serveur directement : [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html).
+
+Hormis si vous êtes dans le dernier cas, vous aurez besoin de définir manuellement le chemin de la ressource à charger : `/api/v3/api-docs`.
+
+---
+
+## 5 Exigences non-couvertes
 
 Quelques exigences obligatoires du CCTP n'ont pas pu être couvertes.  
 Malheureusement, il est nécessaire de sacrifier au moins en partie quelques projets pour que tout rentre à la fin du semestre 😔.
@@ -84,9 +94,9 @@ Malheureusement, il est nécessaire de sacrifier au moins en partie quelques pro
 
 ---
 
-## 5 Difficultés rencontrées
+## 6 Difficultés rencontrées
 
-### 5.1 Rechercher proprement
+### 6.1 Rechercher proprement
 
 Sur le papier, c'est très simple de rechercher... en pratique ça l'est moins !  
 Au départ, l'idée était d'avoir une méthode par combinaison de filtre dans un Repository : ça a le mérite de fonctionner mais c'est une horreur à maintenir.

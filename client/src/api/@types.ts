@@ -4,6 +4,8 @@ export type SearchResultDto<T> = {
   pageCount: number;
   itemsPerPage: number;
   totalItems: number;
+  sortBy: string;
+  sortOrder: "asc" | "desc";
 };
 
 export type DelivererDto = {

@@ -9,91 +9,55 @@ import {
   Link,
   Option,
   Select,
-  Sheet,
   Stack,
   Typography,
 } from "@mui/joy";
 import { DateRangePicker } from "@mui/x-date-pickers-pro";
 import dayjs from "dayjs";
 import { useState } from "react";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import {
-  Link as RouterLink,
-  useNavigate,
-  useSearchParams,
-} from "react-router-dom";
+  BooleanParam,
+  DateTimeParam,
+  StringParam,
+  useQueryParams,
+  withDefault,
+} from "use-query-params";
+import { DelivererDto } from "~/api/@types";
 
 import DelivererCreationModal from "~/components/DelivererCreationModal";
-import SortableAndPaginatedTable from "~/components/SortableAndPaginatedTable";
+import { MyTable, MyTableColumn } from "~/components/MyTable";
 import { useSearchDeliverers } from "~/hooks/useDeliverers";
+import { usePaginationParams } from "~/hooks/usePaginationParams";
 import PathConstants from "~/routes";
 
-type DelivererSearchParams = {
-  name?: string;
-  available?: boolean;
-  createdAfter?: string;
-  createdBefore?: string;
-  page: number;
-  limit: number;
-  sortBy: "name" | "available" | "createdAt";
-  sortOrder: "asc" | "desc";
-};
+const columns: MyTableColumn<DelivererDto>[] = [
+  { key: "name", label: "Nom", renderData: (r) => r.name },
+  { key: "available", label: "Disponibilité", renderData: (r) => (r.available ? "Oui" : "Non") },
+  {
+    key: "createdAt",
+    label: "Date de création",
+    renderData: (r) => dayjs(r.createdAt).format("DD/MM/YYYY HH:mm"),
+  },
+];
 
-const parseSearchParams = (
-  searchParams: URLSearchParams
-): DelivererSearchParams => {
-  const name = searchParams.get("name");
-  const available = searchParams.get("available");
-  const createdAfter = searchParams.get("createdAfter");
-  const createdBefore = searchParams.get("createdBefore");
-  const page = searchParams.get("page");
-  const limit = searchParams.get("limit");
-  const sortBy = searchParams.get("sortBy");
-  const sortOrder = searchParams.get("sortOrder");
-  const createdAfterDate = createdAfter === null ? null : dayjs(createdAfter);
-  const createdBeforeDate =
-    createdBefore === null ? null : dayjs(createdBefore);
-  return {
-    ...(name !== null && name.trim() !== "" ? { name: name.trim() } : {}),
-    ...(available !== null
-      ? { available: available === "false" ? false : true }
-      : {}),
-    ...(createdAfterDate?.isValid()
-      ? { createdAfter: createdAfterDate.toISOString() }
-      : {}),
-    ...(createdBeforeDate?.isValid()
-      ? { createdBefore: createdBeforeDate.toISOString() }
-      : {}),
-    page: Math.max(0, +(page ?? 0), 0),
-    limit: Math.min(Math.max(5, +(limit ?? 0)), 50),
-    sortBy: (["name", "available", "createdAt"] as const).includes(sortBy)
-      ? sortBy
-      : "name",
-    sortOrder: (["asc", "desc"] as const).includes(sortOrder)
-      ? sortOrder
-      : "asc",
-  };
-};
-
-const stringifySearchParams = (parsed: DelivererSearchParams) => {
-  const hasName = typeof parsed.name === "string" && parsed.name.trim() !== "";
-  const hasAvailability = typeof parsed.available === "boolean";
-  return new URLSearchParams({
-    ...(hasName ? { name: parsed.name } : {}),
-    ...(hasAvailability ? { available: String(parsed.available) } : {}),
-    ...(parsed.createdAfter ? { createdAfter: parsed.createdAfter } : {}),
-    ...(parsed.createdBefore ? { createdBefore: parsed.createdBefore } : {}),
-    page: parsed.page.toString(),
-    limit: parsed.limit.toString(),
-    sortBy: parsed.sortBy,
-    sortOrder: parsed.sortOrder,
-  });
+const filterParamsSchema = {
+  name: withDefault(StringParam, null),
+  available: withDefault(BooleanParam, null),
+  createdAfter: withDefault(DateTimeParam, null),
+  createdBefore: withDefault(DateTimeParam, null),
 };
 
 export default function DelivererListPage() {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const parsedSearchParams = parseSearchParams(searchParams);
-  const { data: results } = useSearchDeliverers(parsedSearchParams);
+  const [filterParams, setFilterParams] = useQueryParams(filterParamsSchema);
+  const [paginationParams, setPaginationParams] = usePaginationParams({
+    sortableColumns: ["name", "available", "createdAt"] as const,
+  });
+  const { data: results, isLoading } = useSearchDeliverers({
+    ...filterParams,
+    ...paginationParams,
+  });
   const [isCreationModalOpen, setCreationModalOpen] = useState(false);
   return (
     <>
@@ -103,67 +67,36 @@ export default function DelivererListPage() {
         </Link>
         <Typography>Gestion des livreurs</Typography>
       </Breadcrumbs>
-      <Sheet
-        sx={{
-          border: 1,
-          borderColor: "lightgray",
-          borderRadius: 10,
-          padding: 1,
-        }}
-      >
-        <Stack
-          alignItems="flex-start"
-          direction="row"
-          justifyContent="space-between"
-        >
-          <Stack direction="column">
-            <Typography level="title-md">Filtrer les livreurs</Typography>
+      <MyTable
+        columns={columns}
+        data={results}
+        getRowKey={(row) => row.id}
+        loading={isLoading}
+        header={
+          <Stack alignItems="flex-start" direction="row" justifyContent="space-between" padding={1}>
             <Stack direction="row" gap={2}>
               <FormControl>
                 <FormLabel>Nom</FormLabel>
                 <Input
-                  value={parsedSearchParams.name}
+                  value={filterParams.name ?? undefined}
                   onChange={(e) =>
-                    setSearchParams(
-                      stringifySearchParams({
-                        ...parsedSearchParams,
-                        name: e.target.value,
-                      })
-                    )
+                    setFilterParams((fp) => ({ ...fp, name: e.target.value || null }))
                   }
                 />
               </FormControl>
               <FormControl>
                 <FormLabel>Disponibilité</FormLabel>
                 <Select
-                  onChange={(_, available) =>
-                    setSearchParams(
-                      stringifySearchParams({
-                        ...parsedSearchParams,
-                        available: available ?? undefined,
-                      })
-                    )
-                  }
+                  onChange={(_, available) => setFilterParams((fp) => ({ ...fp, available }))}
                   placeholder="Peu importe"
                   sx={{ minWidth: 150 }}
-                  value={
-                    typeof parsedSearchParams.available === "boolean"
-                      ? parsedSearchParams.available
-                      : null
-                  }
-                  {...(typeof parsedSearchParams.available === "boolean" && {
+                  value={filterParams.available ?? null}
+                  {...(filterParams.available !== null && {
                     indicator: null,
                     endDecorator: (
                       <IconButton
                         color="neutral"
-                        onClick={() =>
-                          setSearchParams(
-                            stringifySearchParams({
-                              ...parsedSearchParams,
-                              available: undefined,
-                            })
-                          )
-                        }
+                        onClick={() => setFilterParams((fp) => ({ ...fp, available: null }))}
                         onMouseDown={(e) => void e.stopPropagation()}
                         variant="plain"
                       >
@@ -186,93 +119,34 @@ export default function DelivererListPage() {
                     clearButtonLabel: "Réinitialiser",
                   }}
                   onChange={(range) =>
-                    setSearchParams(
-                      stringifySearchParams({
-                        ...parsedSearchParams,
-                        createdAfter: range[0]?.toISOString() ?? undefined,
-                        createdBefore:
-                          range[1]
-                            ?.add(1, "day")
-                            .subtract(1, "second")
-                            .toISOString() ?? undefined,
-                      })
-                    )
+                    setFilterParams((fp) => ({
+                      ...fp,
+                      createdAfter: range[0]?.toDate() ?? null,
+                      createdBefore: range[1]?.add(1, "day").subtract(1, "second").toDate() ?? null,
+                    }))
                   }
                   slotProps={{
                     actionBar: { actions: ["clear"] },
                     textField: { size: "small" },
                   }}
                   value={[
-                    parsedSearchParams.createdAfter
-                      ? dayjs(parsedSearchParams.createdAfter)
-                      : null,
-                    parsedSearchParams.createdBefore
-                      ? dayjs(parsedSearchParams.createdBefore)
-                      : null,
+                    filterParams.createdAfter ? dayjs(filterParams.createdAfter) : null,
+                    filterParams.createdBefore ? dayjs(filterParams.createdBefore) : null,
                   ]}
                 />
               </FormControl>
             </Stack>
+            <Button onClick={() => setCreationModalOpen(true)} startDecorator={<Add />}>
+              Créer un livreur
+            </Button>
           </Stack>
-          <Button
-            onClick={() => setCreationModalOpen(true)}
-            startDecorator={<Add />}
-          >
-            Créer un livreur
-          </Button>
-        </Stack>
-        {results && (
-          <SortableAndPaginatedTable
-            columns={[
-              {
-                key: "name",
-                label: "Nom",
-                render: (r) => r.name,
-                sortable: true,
-              },
-              {
-                key: "available",
-                label: "Disponibilité",
-                render: (r) => (r.available ? "Oui" : "Non"),
-                sortable: true,
-              },
-              {
-                key: "createdAt",
-                label: "Création",
-                render: (r) => dayjs(r.createdAt).format("DD/MM/YYYY HH:mm"),
-                sortable: true,
-              },
-            ]}
-            data={results.items}
-            hoverRow
-            onClick={(row) => navigate(`/deliverers/${row.id}`)}
-            onPageChange={(page, limit) =>
-              setSearchParams(
-                stringifySearchParams({ ...parsedSearchParams, page, limit })
-              )
-            }
-            onSortChange={(sortBy, sortOrder) =>
-              setSearchParams(
-                stringifySearchParams({
-                  ...parsedSearchParams,
-                  sortBy: sortBy as "name" | "available" | "createdAt",
-                  sortOrder,
-                })
-              )
-            }
-            pagination={{
-              page: results.page,
-              totalPages: results.pageCount,
-              pageSize: results.itemsPerPage,
-            }}
-            sort={{
-              by: parsedSearchParams.sortBy,
-              order: parsedSearchParams.sortOrder,
-            }}
-            totalItems={results.totalItems}
-          />
-        )}
-      </Sheet>
+        }
+        itemsPerPageOptions={[5, 10]}
+        onClick={(r) => navigate(`/deliverers/${r.id}`)}
+        onPaginationUpdate={(pagination) => setPaginationParams((pp) => ({ ...pp, ...pagination }))}
+        onSortUpdate={(sort) => setPaginationParams((pp) => ({ ...pp, ...sort }))}
+        sortableColumns={["name", "available", "createdAt"] as const}
+      />
       <DelivererCreationModal
         aria-labelledby="Création d'un livreur"
         aria-describedby="Formulaire de création d'un nouveau livreur"

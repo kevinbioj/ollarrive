@@ -89,7 +89,7 @@ public class DelivererService {
         Direction.fromString(Objects.requireNonNullElse(request.getSortOrder(), "asc")),
         Objects.requireNonNullElse(request.getSortBy(), "name")
     );
-    var pageable = PageRequest.of(request.getPage(), request.getLimit(), sort);
+    var pageable = PageRequest.of(request.getPage(), request.getItemsPerPage(), sort);
     var specification = createSearchSpecification(request);
     var results = delivererRepository.findAll(specification, pageable);
     return new SearchResultDto<>(
@@ -97,7 +97,9 @@ public class DelivererService {
         results.getNumber(),
         results.getTotalPages(),
         results.getSize(),
-        results.getTotalElements()
+        results.getTotalElements(),
+        request.getSortBy(),
+        request.getSortOrder()
     );
   }
 

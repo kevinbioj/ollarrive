@@ -17,7 +17,7 @@ public class TourSearchRequest {
 
   /* Paramètres de tri */
 
-  @OneOf(value = {"name", "available", "createdAt"}, message = "sortBy.invalid")
+  @OneOf(value = {"name", "startDate", "endDate"}, message = "sortBy.invalid")
   private String sortBy;
 
   @OneOf(value = {"asc", "desc"}, message = "sortOrder.invalid")
@@ -28,6 +28,6 @@ public class TourSearchRequest {
   @Min(value = 0, message = "page.min")
   private Integer page = 0;
 
-  @Range(min = 1, max = 50, message = "limit.range")
-  private Integer limit = 10;
+  @Range(min = 5, max = 50, message = "itemsPerPage.range")
+  private Integer itemsPerPage = 10;
 }

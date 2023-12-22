@@ -21,10 +21,7 @@ import { useCreateTour } from "~/hooks/useTours";
 
 type TourCreationModalProps = Omit<ModalProps, "children">;
 
-export default function TourCreationModal({
-  onClose,
-  ...props
-}: TourCreationModalProps) {
+export default function TourCreationModal({ onClose, ...props }: TourCreationModalProps) {
   const { data, mutate: createTour } = useCreateTour();
   const { control, formState, handleSubmit } = useForm({
     defaultValues: {
@@ -49,17 +46,12 @@ export default function TourCreationModal({
               })
             )}
           >
-            <FormControl
-              error={!!formState.errors.name}
-              sx={{ marginBottom: 3 }}
-            >
+            <FormControl error={!!formState.errors.name} sx={{ marginBottom: 3 }}>
               <FormLabel>Nom</FormLabel>
               <Controller
                 control={control}
                 name="name"
-                render={({ field }) => (
-                  <Input placeholder="Jacques" {...field} />
-                )}
+                render={({ field }) => <Input placeholder="Tournée de Guiness" {...field} />}
                 rules={{
                   maxLength: {
                     value: TOUR_NAME_LIMIT,
@@ -79,10 +71,7 @@ export default function TourCreationModal({
                 control={control}
                 name="startDate"
                 render={({ field }) => (
-                  <DateTimePicker
-                    slotProps={{ textField: { size: "small" } }}
-                    {...field}
-                  />
+                  <DateTimePicker slotProps={{ textField: { size: "small" } }} {...field} />
                 )}
               />
             </FormControl>
@@ -92,10 +81,7 @@ export default function TourCreationModal({
                 control={control}
                 name="endDate"
                 render={({ field }) => (
-                  <DateTimePicker
-                    slotProps={{ textField: { size: "small" } }}
-                    {...field}
-                  />
+                  <DateTimePicker slotProps={{ textField: { size: "small" } }} {...field} />
                 )}
               />
             </FormControl>

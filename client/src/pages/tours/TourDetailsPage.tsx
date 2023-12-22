@@ -20,11 +20,7 @@ import { Link as RouterLink, useNavigate, useParams } from "react-router-dom";
 import { TOUR_NAME_LIMIT } from "~/api/constants";
 import { findDeliverers } from "~/api/deliverers";
 import AsynchronousAutocomplete from "~/components/AsynchronousAutocomplete";
-import {
-  useDeleteTourById,
-  useTourById,
-  useUpdateTourById,
-} from "~/hooks/useTours";
+import { useDeleteTourById, useTourById, useUpdateTourById } from "~/hooks/useTours";
 import PathConstants from "~/routes";
 
 export default function TourDetailsPage() {
@@ -54,9 +50,7 @@ export default function TourDetailsPage() {
     setValue("endDate", dayjs(tour.endDate));
     setValue(
       "deliverer",
-      tour.deliverer
-        ? { label: tour.deliverer.name, id: tour.deliverer.id }
-        : null
+      tour.deliverer ? { label: tour.deliverer.name, id: tour.deliverer.id } : null
     );
   }, [tour, setValue]);
 
@@ -66,11 +60,7 @@ export default function TourDetailsPage() {
         <Link color="neutral" component={RouterLink} to={PathConstants.HOME}>
           Accueil
         </Link>
-        <Link
-          color="neutral"
-          component={RouterLink}
-          to={PathConstants.TOUR_LIST}
-        >
+        <Link color="neutral" component={RouterLink} to={PathConstants.TOUR_LIST}>
           Gestion des tournées
         </Link>
         <Typography>{tour?.name ?? "Chargement en cours..."}</Typography>
@@ -111,10 +101,7 @@ export default function TourDetailsPage() {
               control={control}
               name="startDate"
               render={({ field }) => (
-                <DateTimePicker
-                  slotProps={{ textField: { size: "small" } }}
-                  {...field}
-                />
+                <DateTimePicker slotProps={{ textField: { size: "small" } }} {...field} />
               )}
             />
           </FormControl>
@@ -124,10 +111,7 @@ export default function TourDetailsPage() {
               control={control}
               name="endDate"
               render={({ field }) => (
-                <DateTimePicker
-                  slotProps={{ textField: { size: "small" } }}
-                  {...field}
-                />
+                <DateTimePicker slotProps={{ textField: { size: "small" } }} {...field} />
               )}
             />
           </FormControl>
@@ -149,18 +133,14 @@ export default function TourDetailsPage() {
                   }}
                   isOptionEqualToValue={(o1, o2) => o1.id === o2.id}
                   onChange={(_, value) => onChange(value)}
+                  noOptionsText="Commencez à saisir le nom d'un livreur"
                   {...field}
                 />
               )}
             />
           </FormControl>
           <Stack direction="row" gap={1}>
-            <Button
-              color="warning"
-              fullWidth
-              loading={isUpdating}
-              type="submit"
-            >
+            <Button color="warning" fullWidth loading={isUpdating} type="submit">
               Mettre à jour
             </Button>
             <IconButton

@@ -1,5 +1,6 @@
-import { ArrowRight, Delete, KeyboardArrowRight } from "@mui/icons-material";
+import { Delete, KeyboardArrowRight } from "@mui/icons-material";
 import {
+  Box,
   Breadcrumbs,
   Button,
   FormControl,
@@ -29,8 +30,7 @@ export default function DeliveryDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: delivery } = useDeliveryById(id!);
-  const { isPending: isUpdating, mutate: updateDelivery } =
-    useUpdateDeliveryById(id!);
+  const { isPending: isUpdating, mutate: updateDelivery } = useUpdateDeliveryById(id!);
   const { mutate: deleteDelivery } = useDeleteDeliveryById(id!);
   const { control, formState, handleSubmit, setValue } = useForm<{
     pickupAddress: string;
@@ -48,10 +48,7 @@ export default function DeliveryDetailsPage() {
     if (typeof delivery === "undefined") return;
     setValue("pickupAddress", delivery.pickupAddress);
     setValue("deliveryAddress", delivery.deliveryAddress);
-    setValue(
-      "tour",
-      delivery.tour ? { label: delivery.tour.name, id: delivery.tour.id } : null
-    );
+    setValue("tour", delivery.tour ? { label: delivery.tour.name, id: delivery.tour.id } : null);
   }, [delivery, setValue]);
 
   return (
@@ -60,18 +57,15 @@ export default function DeliveryDetailsPage() {
         <Link color="neutral" component={RouterLink} to={PathConstants.HOME}>
           Accueil
         </Link>
-        <Link
-          color="neutral"
-          component={RouterLink}
-          to={PathConstants.DELIVERY_LIST}
-        >
+        <Link color="neutral" component={RouterLink} to={PathConstants.DELIVERY_LIST}>
           Gestion des livraisons
         </Link>
         <Typography>
           {delivery ? (
-            <Typography>
-              {delivery.pickupAddress} <ArrowRight /> {delivery.deliveryAddress}
-            </Typography>
+            <Box alignItems="center" display="flex">
+              {delivery.pickupAddress} <KeyboardArrowRight fontSize="small" />{" "}
+              {delivery.deliveryAddress}
+            </Box>
           ) : (
             "Chargement en cours..."
           )}
@@ -88,19 +82,13 @@ export default function DeliveryDetailsPage() {
             <FormLabel>Identifiant</FormLabel>
             <Input defaultValue={delivery.id} readOnly variant="soft" />
           </FormControl>
-          <FormControl
-            error={!!formState.errors.pickupAddress}
-            sx={{ marginBottom: 3 }}
-          >
+          <FormControl error={!!formState.errors.pickupAddress} sx={{ marginBottom: 3 }}>
             <FormLabel>Adresse d&apos;enlèvement</FormLabel>
             <Controller
               control={control}
               name="pickupAddress"
               render={({ field }) => (
-                <Input
-                  placeholder="3 Avenue du McDonald's 76000 Rouen"
-                  {...field}
-                />
+                <Input placeholder="3 Avenue du McDonald's 76000 Rouen" {...field} />
               )}
               rules={{
                 maxLength: {
@@ -113,23 +101,15 @@ export default function DeliveryDetailsPage() {
                 },
               }}
             />
-            <FormHelperText>
-              {formState.errors.pickupAddress?.message}
-            </FormHelperText>
+            <FormHelperText>{formState.errors.pickupAddress?.message}</FormHelperText>
           </FormControl>
-          <FormControl
-            error={!!formState.errors.deliveryAddress}
-            sx={{ marginBottom: 3 }}
-          >
+          <FormControl error={!!formState.errors.deliveryAddress} sx={{ marginBottom: 3 }}>
             <FormLabel>Adresse de livraison</FormLabel>
             <Controller
               control={control}
               name="deliveryAddress"
               render={({ field }) => (
-                <Input
-                  placeholder="8 Avenue du Burger King 76600 Petit-Quevilly"
-                  {...field}
-                />
+                <Input placeholder="8 Avenue du Burger King 76600 Petit-Quevilly" {...field} />
               )}
               rules={{
                 maxLength: {
@@ -142,9 +122,7 @@ export default function DeliveryDetailsPage() {
                 },
               }}
             />
-            <FormHelperText>
-              {formState.errors.deliveryAddress?.message}
-            </FormHelperText>
+            <FormHelperText>{formState.errors.deliveryAddress?.message}</FormHelperText>
           </FormControl>
           <FormControl sx={{ marginBottom: 3 }}>
             <FormLabel>Tournée de rattachement</FormLabel>
@@ -170,12 +148,7 @@ export default function DeliveryDetailsPage() {
             />
           </FormControl>
           <Stack direction="row" gap={1}>
-            <Button
-              color="warning"
-              fullWidth
-              loading={isUpdating}
-              type="submit"
-            >
+            <Button color="warning" fullWidth loading={isUpdating} type="submit">
               Mettre à jour
             </Button>
             <IconButton

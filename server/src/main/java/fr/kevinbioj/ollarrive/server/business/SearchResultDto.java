@@ -13,4 +13,6 @@ public class SearchResultDto<T> {
   private int pageCount;
   private int itemsPerPage;
   private long totalItems;
+  private String sortBy;
+  private String sortOrder;
 }

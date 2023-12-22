@@ -1,57 +1,39 @@
 import { Add, KeyboardArrowRight } from "@mui/icons-material";
-import { Breadcrumbs, Button, Link, Sheet, Stack, Typography } from "@mui/joy";
+import { Breadcrumbs, Button, Link, Stack, Typography } from "@mui/joy";
 import { useState } from "react";
-import {
-  Link as RouterLink,
-  useNavigate,
-  useSearchParams,
-} from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 
-import SortableAndPaginatedTable from "~/components/SortableAndPaginatedTable";
-import PathConstants from "~/routes";
-import { useSearchDeliveries } from "~/hooks/useDeliveries";
+import { DeliveryDto } from "~/api/@types";
 import DeliveryCreationModal from "~/components/DeliveryCreationModal";
+import { MyTable, MyTableColumn } from "~/components/MyTable";
+import { useSearchDeliveries } from "~/hooks/useDeliveries";
+import { usePaginationParams } from "~/hooks/usePaginationParams";
+import PathConstants from "~/routes";
 
-type DeliverySearchParams = {
-  page: number;
-  limit: number;
-  sortBy: "pickupAddress" | "deliveryAddress";
-  sortOrder: "asc" | "desc";
-};
-
-const parseSearchParams = (
-  searchParams: URLSearchParams
-): DeliverySearchParams => {
-  const page = searchParams.get("page");
-  const limit = searchParams.get("limit");
-  const sortBy = searchParams.get("sortBy");
-  const sortOrder = searchParams.get("sortOrder");
-  return {
-    page: Math.max(0, +(page ?? 0), 0),
-    limit: Math.min(Math.max(5, +(limit ?? 0)), 50),
-    sortBy: (["pickupAddress", "deliveryAddress"] as const).includes(sortBy)
-      ? sortBy
-      : "pickupAddress",
-    sortOrder: (["asc", "desc"] as const).includes(sortOrder)
-      ? sortOrder
-      : "asc",
-  };
-};
-
-const stringifySearchParams = (parsed: DeliverySearchParams) => {
-  return new URLSearchParams({
-    page: parsed.page.toString(),
-    limit: parsed.limit.toString(),
-    sortBy: parsed.sortBy,
-    sortOrder: parsed.sortOrder,
-  });
-};
+const columns: MyTableColumn<DeliveryDto>[] = [
+  {
+    key: "pickupAddress",
+    label: "Adresse d'enlèvement",
+    renderData: (r) => r.pickupAddress,
+  },
+  {
+    key: "deliveryAddress",
+    label: "Adresse de livraison",
+    renderData: (r) => r.deliveryAddress,
+  },
+  {
+    key: "tour",
+    label: "Tournée",
+    renderData: (r) => (r.tour ? r.tour.name : <Typography color="neutral">Aucune</Typography>),
+  },
+] as const;
 
 export default function DeliveryListPage() {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const parsedSearchParams = parseSearchParams(searchParams);
-  const { data: results } = useSearchDeliveries(parsedSearchParams);
+  const [searchParams, setSearchParams] = usePaginationParams({
+    sortableColumns: ["pickupAddress", "deliveryAddress"] as const,
+  });
+  const { data: results, isLoading } = useSearchDeliveries(searchParams);
   const [isCreationModalOpen, setCreationModalOpen] = useState(false);
   return (
     <>
@@ -61,82 +43,24 @@ export default function DeliveryListPage() {
         </Link>
         <Typography>Gestion des livraisons</Typography>
       </Breadcrumbs>
-      <Sheet
-        sx={{
-          border: 1,
-          borderColor: "lightgray",
-          borderRadius: 10,
-          padding: 1,
-        }}
-      >
-        <Stack
-          alignItems="flex-start"
-          direction="row"
-          justifyContent="flex-end"
-        >
-          <Button
-            onClick={() => setCreationModalOpen(true)}
-            startDecorator={<Add />}
-          >
-            Créer une livraison
-          </Button>
-        </Stack>
-        {results && (
-          <SortableAndPaginatedTable
-            columns={[
-              {
-                key: "pickupAddress",
-                label: "Adresse d'enlèvement",
-                render: (r) => r.pickupAddress,
-                sortable: true,
-              },
-              {
-                key: "deliveryAddress",
-                label: "Adresse de livraison",
-                render: (r) => r.deliveryAddress,
-                sortable: true,
-              },
-              {
-                key: "tour",
-                label: "Tournée",
-                render: (r) =>
-                  r.tour ? (
-                    r.tour.name
-                  ) : (
-                    <Typography color="neutral">Aucune</Typography>
-                  ),
-              },
-            ]}
-            data={results.items}
-            hoverRow
-            onClick={(row) => navigate(`/deliveries/${row.id}`)}
-            onPageChange={(page, limit) =>
-              setSearchParams(
-                stringifySearchParams({ ...parsedSearchParams, page, limit })
-              )
-            }
-            onSortChange={(sortBy, sortOrder) =>
-              setSearchParams(
-                stringifySearchParams({
-                  ...parsedSearchParams,
-                  sortBy: sortBy as "pickupAddress" | "deliveryAddress",
-                  sortOrder,
-                })
-              )
-            }
-            pagination={{
-              page: results.page,
-              totalPages: results.pageCount,
-              pageSize: results.itemsPerPage,
-            }}
-            sort={{
-              by: parsedSearchParams.sortBy,
-              order: parsedSearchParams.sortOrder,
-            }}
-            totalItems={results.totalItems}
-          />
-        )}
-      </Sheet>
+      <MyTable
+        columns={columns}
+        data={results}
+        getRowKey={(row) => row.id}
+        loading={isLoading}
+        header={
+          <Stack alignItems="flex-start" direction="row" justifyContent="flex-end" padding={1}>
+            <Button onClick={() => setCreationModalOpen(true)} startDecorator={<Add />}>
+              Créer une livraison
+            </Button>
+          </Stack>
+        }
+        itemsPerPageOptions={[5, 10]}
+        onClick={(r) => navigate(`/deliveries/${r.id}`)}
+        onPaginationUpdate={(pagination) => setSearchParams((sp) => ({ ...sp, ...pagination }))}
+        onSortUpdate={(sort) => setSearchParams((sp) => ({ ...sp, ...sort }))}
+        sortableColumns={["pickupAddress", "deliveryAddress"] as const}
+      />
       <DeliveryCreationModal
         aria-labelledby="Création d'une livraison"
         aria-describedby="Formulaire de création d'une nouvelle livraison"
